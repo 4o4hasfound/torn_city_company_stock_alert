@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Torn City Company Stock Alert
-// @version      0.2.1
-// @description  Flash the Job sidebar when your company stock is not sufficient to support a set amount of days of sales.
+// @version      0.2.2
+// @description  This script flashes the job sidebar when your company stock is not sufficient to support a set amount of days of sales.
 // @author       404hasfound [2995605]
 // @namespace    https://github.com/4o4hasfound/torn_city_company_stock_alert
 // @match        https://www.torn.com/*
@@ -13,10 +13,13 @@
 
 'use strict';
 
+const PDA_APIKey = '###PDA-APIKEY###';
 const DEFAULT_MIN_DAYS_OF_STOCK = 2;
 
 const SETTING_CSS_STYLE = `
     .csa-card {
+        width: 100%;
+        box-sizing: border-box;
         margin-top: 20px;
         font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         border: 1px solid #2e2e30;
@@ -146,11 +149,26 @@ const SETTING_CSS_STYLE = `
         border-radius: inherit !important;
         background-color: var(--csa-flash-color, #e74c3c) !important;
         animation: csa-pulse var(--csa-flash-speed, 2s) infinite ease-in-out !important;
+        animation-delay: calc(var(--csa-flash-speed, 2s) * -0.5) !important;
+    }
+    @media (max-width: 600px) {
+        .csa-content {
+            padding: 16px 16px;
+        }
+        .csa-input {
+            max-width: 220px;
+        }
     }
 `;
 
 function getApiKey() {
-    return GM_getValue("apiKey", "");
+    const key = GM_getValue("apiKey", "");
+    if (key) return key;
+    const isPDA = !/^(###).+(###)$/.test(PDA_APIKey);
+    if (isPDA) {
+        return PDA_APIKey;
+    }
+    return "";
 }
 
 function getMinDaysOfStock() {
